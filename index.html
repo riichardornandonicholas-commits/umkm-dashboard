@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMKM Finance Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 5px;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tab {
+            padding: 12px 25px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.expense {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-card.profit {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .stat-card .amount {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .transaction-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .transaction-item {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        .transaction-item:hover {
+            background: #f8f9fa;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-info {
+            flex-grow: 1;
+        }
+
+        .transaction-info h4 {
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .transaction-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .transaction-amount.income {
+            color: #28a745;
+        }
+
+        .transaction-amount.expense {
+            color: #dc3545;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-controls select {
+            padding: 8px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .profile-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .danger-zone {
+            background: #fff5f5;
+            border: 2px solid #fed7d7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .danger-zone h3 {
+            color: #c53030;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+
+            .nav-tab {
+                flex: 1;
+                min-width: 120px;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-controls {
+                flex-direction: column;
+            }
+
+            .transaction-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> UMKM Finance Manager</h1>
+            <p>Kelola Keuangan UMKM Anda dengan Mudah dan Profesional</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showSection('dashboard')">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </button>
+            <button class="nav-tab" onclick="showSection('transactions')">
+                <i class="fas fa-exchange-alt"></i> Transaksi
+            </button>
+            <button class="nav-tab" onclick="showSection('reports')">
+                <i class="fas fa-chart-bar"></i> Laporan
+            </button>
+            <button class="nav-tab" onclick="showSection('settings')">
+                <i class="fas fa-cog"></i> Pengaturan
+            </button>
+        </div>
+
+        <div class="content">
+            <!-- DASHBOARD SECTION -->
+            <div id="dashboard" class="section active">
+                <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <h3>Total Pendapatan</h3>
+                        <div class="amount" id="totalIncome">Rp 0</div>
+                    </div>
+                    <div class="stat-card expense">
+                        <h3>Total Pengeluaran</h3>
+                        <div class="amount" id="totalExpense">Rp 0</div>
+                    </div>
+                    <div class="stat-card profit">
+                        <h3>Laba Bersih</h3>
+                        <div class="amount" id="netProfit">Rp 0</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Grafik Cashflow (30 Hari Terakhir)</h3>
+                    <canvas id="cashflowChart" width="400" height="200"></canvas>
+                </div>
+
+                <div>
+                    <h3>Transaksi Terbaru</h3>
+                    <div id="recentTransactions" class="transaction-list">
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            Belum ada transaksi
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TRANSACTIONS SECTION -->
+            <div id="transactions" class="section">
+                <h2><i class="fas fa-exchange-alt"></i> Manajemen Transaksi</h2>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                    <div>
+                        <h3>Tambah Transaksi Baru</h3>
+                        <form id="transactionForm">
+                            <div class="form-group">
+                                <label for="transactionDate">Tanggal</label>
+                                <input type="date" id="transactionDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionType">Jenis Transaksi</label>
+                                <select id="transactionType" required>
+                                    <option value="">Pilih jenis transaksi</option>
+                                    <option value="income">Pendapatan</option>
+                                    <option value="expense">Pengeluaran</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionCategory">Kategori</label>
+                                <input type="text" id="transactionCategory" placeholder="Contoh: Penjualan, Bahan Baku, dll" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionDescription">Deskripsi</label>
+                                <textarea id="transactionDescription" rows="3" placeholder="Deskripsi detail transaksi" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionAmount">Jumlah (Rp)</label>
+                                <input type="number" id="transactionAmount" placeholder="0" required min="1">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Tambah Transaksi
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div>
+                        <h3>Ringkasan Hari Ini</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card" style="margin-bottom: 15px;">
+                                <h3>Pendapatan Hari Ini</h3>
+                                <div class="amount" id="todayIncome">Rp 0</div>
+                            </div>
+                            <div class="stat-card expense">
+                                <h3>Pengeluaran Hari Ini</h3>
+                                <div class="amount" id="todayExpense">Rp 0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3>Daftar Semua Transaksi</h3>
+                    <div id="allTransactions" class="transaction-list">
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            Belum ada transaksi
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPORTS SECTION -->
+            <div id="reports" class="section">
+                <h2><i class="fas fa-chart-bar"></i> Laporan Keuangan</h2>
+                
+                <div class="filter-controls">
+                    <select id="reportPeriod" onchange="generateReport()">
+                        <option value="7">7 Hari Terakhir</option>
+                        <option value="30">30 Hari Terakhir</option>
+                        <option value="90">90 Hari Terakhir</option>
+                        <option value="365">1 Tahun Terakhir</option>
+                        <option value="all">Semua Data</option>
+                    </select>
+                    
+                    <select id="reportType" onchange="generateReport()">
+                        <option value="summary">Ringkasan</option>
+                        <option value="category">Per Kategori</option>
+                        <option value="daily">Harian</option>
+                    </select>
+                </div>
+
+                <div class="stats-grid" id="reportStats">
+                    <div class="stat-card">
+                        <h3>Pendapatan Periode</h3>
+                        <div class="amount" id="periodIncome">Rp 0</div>
+                    </div>
+                    <div class="stat-card expense">
+                        <h3>Pengeluaran Periode</h3>
+                        <div class="amount" id="periodExpense">Rp 0</div>
+                    </div>
+                    <div class="stat-card profit">
+                        <h3>Laba Periode</h3>
+                        <div class="amount" id="periodProfit">Rp 0</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3 id="chartTitle">Grafik Laporan</h3>
+                    <canvas id="reportChart" width="400" height="200"></canvas>
+                </div>
+
+                <div id="reportDetails" style="margin-top: 30px;"></div>
+            </div>
+
+            <!-- SETTINGS SECTION -->
+            <div id="settings" class="section">
+                <h2><i class="fas fa-cog"></i> Pengaturan</h2>
+                
+                <div class="profile-form">
+                    <h3>Profil UMKM</h3>
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label for="businessName">Nama Usaha</label>
+                            <input type="text" id="businessName" placeholder="Nama UMKM Anda">
+                        </div>
+                        <div class="form-group">
+                            <label for="businessType">Jenis Usaha</label>
+                            <input type="text" id="businessType" placeholder="Contoh: Retail, F&B, Jasa, dll">
+                        </div>
+                        <div class="form-group">
+                            <label for="ownerName">Nama Pemilik</label>
+                            <input type="text" id="ownerName" placeholder="Nama lengkap pemilik">
+                        </div>
+                        <div class="form-group">
+                            <label for="businessAddress">Alamat Usaha</label>
+                            <textarea id="businessAddress" rows="3" placeholder="Alamat lengkap usaha"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="businessPhone">Nomor Telepon</label>
+                            <input type="tel" id="businessPhone" placeholder="Nomor telepon usaha">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Simpan Profil
+                        </button>
+                    </form>
+
+                    <div style="margin: 40px 0;">
+                        <h3>Backup & Restore</h3>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <button class="btn btn-success" onclick="exportData()">
+                                <i class="fas fa-download"></i> Export Data (JSON)
+                            </button>
+                            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                            <button class="btn btn-primary" onclick="document.getElementById('importFile').click()">
+                                <i class="fas fa-upload"></i> Import Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="danger-zone">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Zona Berbahaya</h3>
+                        <p style="margin-bottom: 15px; color: #666;">
+                            Tindakan ini akan menghapus semua data transaksi dan profil. Pastikan Anda sudah melakukan backup.
+                        </p>
+                        <button class="btn btn-danger" onclick="clearAllData()">
+                            <i class="fas fa-trash"></i> Hapus Semua Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let transactions = JSON.parse(localStorage.getItem('umkm_transactions') || '[]');
+        let businessProfile = JSON.parse(localStorage.getItem('umkm_profile') || '{}');
+        let cashflowChart = null;
+        let reportChart = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default
+            document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+            
+            // Load profile data
+            loadProfileData();
+            
+            // Initial data load
+            updateDashboard();
+            updateTransactionsList();
+            generateReport();
+            
+            // Setup form handlers
+            document.getElementById('transactionForm').addEventListener('submit', handleAddTransaction);
+            document.getElementById('profileForm').addEventListener('submit', handleSaveProfile);
+        });
+
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (sectionId === 'dashboard') {
+                updateDashboard();
+            } else if (sectionId === 'transactions') {
+                updateTransactionsList();
+                updateTodayStats();
+            } else if (sectionId === 'reports') {
+                generateReport();
+            }
+        }
+
+        // Transaction management
+        function handleAddTransaction(e) {
+            e.preventDefault();
+            
+            const transaction = {
+                id: Date.now().toString(),
+                date: document.getElementById('transactionDate').value,
+                type: document.getElementById('transactionType').value,
+                category: document.getElementById('transactionCategory').value,
+                description: document.getElementById('transactionDescription').value,
+                amount: parseFloat(document.getElementById('transactionAmount').value),
+                timestamp: new Date().toISOString()
+            };
+            
+            transactions.unshift(transaction);
+            localStorage.setItem('umkm_transactions', JSON.stringify(transactions));
+            
+            // Reset form
+            document.getElementById('transactionForm').reset();
+            document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+            
+            // Update displays
+            updateDashboard();
+            updateTransactionsList();
+            updateTodayStats();
+            
+            alert('Transaksi berhasil ditambahkan!');
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                localStorage.setItem('umkm_transactions', JSON.stringify(transactions));
+                updateDashboard();
+                updateTransactionsList();
+                updateTodayStats();
+            }
+        }
+
+        // Dashboard functions
+        function updateDashboard() {
+            const stats = calculateStats(transactions);
+            
+            document.getElementById('totalIncome').textContent = formatCurrency(stats.totalIncome);
+            document.getElementById('totalExpense').textContent = formatCurrency(stats.totalExpense);
+            document.getElementById('netProfit').textContent = formatCurrency(stats.netProfit);
+            
+            updateCashflowChart();
+            updateRecentTransactions();
+        }
+
+        function updateRecentTransactions() {
+            const recentContainer = document.getElementById('recentTransactions');
+            const recent = transactions.slice(0, 5);
+            
+            if (recent.length === 0) {
+                recentContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">Belum ada transaksi</div>';
+                return;
+            }
+            
+            recentContainer.innerHTML = recent.map(t => `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <h4>${t.description}</h4>
+                        <p>${t.category} • ${formatDate(t.date)}</p>
+                    </div>
+                    <div class="transaction-amount ${t.type}">
+                        ${t.type === 'income' ? '+' : '-'} ${formatCurrency(t.amount)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateTransactionsList() {
+            const allContainer = document.getElementById('allTransactions');
+            
+            if (transactions.length === 0) {
+                allContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">Belum ada transaksi</div>';
+                return;
+            }
+            
+            allContainer.innerHTML = transactions.map(t => `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <h4>${t.description}</h4>
+                        <p>${t.category} • ${formatDate(t.date)}</p>
+                    </div>
+                    <div class="transaction-amount ${t.type}">
+                        ${t.type === 'income' ? '+' : '-'} ${formatCurrency(t.amount)}
+                    </div>
+                    <button class="btn btn-danger" style="padding: 8px 12px; font-size: 0.8rem;" onclick="deleteTransaction('${t.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateTodayStats() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayTransactions = transactions.filter(t => t.date === today);
+            const todayStats = calculateStats(todayTransactions);
+            
+            document.getElementById('todayIncome').textContent = formatCurrency(todayStats.totalIncome);
+            document.getElementById('todayExpense').textContent = formatCurrency(todayStats.totalExpense);
+        }
+
+        // Chart functions
+        function updateCashflowChart() {
+            const ctx = document.getElementById('cashflowChart').getContext('2d');
+            
+            // Get last 30 days data
+            const last30Days = Array.from({length: 30}, (_, i) => {
+                const date = new Date();
+                date.setDate(date.getDate() - (29 - i));
+                return date.toISOString().split('T')[0];
+            });
+            
+            const dailyData = last30Days.map(date => {
+                const dayTransactions = transactions.filter(t => t.date === date);
+                const stats = calculateStats(dayTransactions);
+                return {
+                    date: date,
+                    income: stats.totalIncome,
+                    expense: stats.totalExpense,
+                    profit: stats.netProfit
+                };
+            });
+            
+            if (cashflowChart) {
+                cashflowChart.destroy();
+            }
+            
+            cashflowChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dailyData.map(d => formatDateShort(d.date)),
+                    datasets: [{
+                        label: 'Pendapatan',
+                        data: dailyData.map(d => d.income),
+                        borderColor: '#4facfe',
+                        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Pengeluaran',
+                        data: dailyData.map(d => d.expense),
+                        borderColor: '#fa709a',
+                        backgroundColor: 'rgba(250, 112, 154, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Reports
+        function generateReport() {
+            const period = parseInt(document.getElementById('reportPeriod').value);
+            const reportType = document.getElementById('reportType').value;
+            
+            let filteredTransactions = transactions;
+            
+            if (period !== 'all') {
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - period);
+                filteredTransactions = transactions.filter(t => new Date(t.date) >= cutoffDate);
+            }
+            
+            const stats = calculateStats(filteredTransactions);
+            
+            document.getElementById('periodIncome').textContent = formatCurrency(stats.totalIncome);
+            document.getElementById('periodExpense').textContent = formatCurrency(stats.totalExpense);
+            document.getElementById('periodProfit').textContent = formatCurrency(stats.netProfit);
+            
+            generateReportChart(filteredTransactions, reportType);
+        }
+
+        function generateReportChart(data, type) {
+            const ctx = document.getElementById('reportChart').getContext('2d');
+            
+            if (reportChart) {
+                reportChart.destroy();
+            }
+            
+            if (type === 'category') {
+                const categories = {};
+                data.forEach(t => {
+                    if (!categories[t.category]) {
+                        categories[t.category] = { income: 0, expense: 0 };
+                    }
+                    categories[t.category][t.type] += t.amount;
+                });
+                
+                const labels = Object.keys(categories);
+                const incomeData = labels.map(label => categories[label].income);
+                const expenseData = labels.map(label => categories[label].expense);
+                
+                reportChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Pendapatan',
+                            data: incomeData,
+                            backgroundColor: '#4facfe'
+                        }, {
+                            label: 'Pengeluaran',
+                            data: expenseData,
+                            backgroundColor: '#fa709a'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                document.getElementById('chartTitle').textContent = 'Laporan Per Kategori';
+            } else {
+                // Daily report (default)
+                const dailyData = {};
+                data.forEach(t => {
+                    if (!dailyData[t.date]) {
+                        dailyData[t.date] = { income: 0, expense: 0 };
+                    }
+                    dailyData[t.date][t.type] += t.amount;
+                });
+                
+                const sortedDates = Object.keys(dailyData).sort();
+                const incomeData = sortedDates.map(date => dailyData[date].income);
+                const expenseData = sortedDates.map(date => dailyData[date].expense);
+                
+                reportChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: sortedDates.map(date => formatDateShort(date)),
+                        datasets: [{
+                            label: 'Pendapatan',
+                            data: incomeData,
+                            borderColor: '#4facfe',
+                            backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Pengeluaran',
+                            data: expenseData,
+                            borderColor: '#fa709a',
+                            backgroundColor: 'rgba(250, 112, 154, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                document.getElementById('chartTitle').textContent = 'Laporan Harian';
+            }
+        }
+
+        // Profile management
+        function loadProfileData() {
+            const profile = businessProfile;
+            document.getElementById('businessName').value = profile.businessName || '';
+            document.getElementById('businessType').value = profile.businessType || '';
+            document.getElementById('ownerName').value = profile.ownerName || '';
+            document.getElementById('businessAddress').value = profile.businessAddress || '';
+            document.getElementById('businessPhone').value = profile.businessPhone || '';
+        }
+
+        function handleSaveProfile(e) {
+            e.preventDefault();
+            
+            businessProfile = {
+                businessName: document.getElementById('businessName').value,
+                businessType: document.getElementById('businessType').value,
+                ownerName: document.getElementById('ownerName').value,
+                businessAddress: document.getElementById('businessAddress').value,
+                businessPhone: document.getElementById('businessPhone').value,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            localStorage.setItem('umkm_profile', JSON.stringify(businessProfile));
+            alert('Profil berhasil disimpan!');
+        }
+
+        // Data management
+        function exportData() {
+            const exportData = {
+                transactions: transactions,
+                profile: businessProfile,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `umkm_finance_backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            alert('Data berhasil diekspor!');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (confirm('Import data akan mengganti semua data yang ada. Lanjutkan?')) {
+                        if (importedData.transactions) {
+                            transactions = importedData.transactions;
+                            localStorage.setItem('umkm_transactions', JSON.stringify(transactions));
+                        }
+                        
+                        if (importedData.profile) {
+                            businessProfile = importedData.profile;
+                            localStorage.setItem('umkm_profile', JSON.stringify(businessProfile));
+                            loadProfileData();
+                        }
+                        
+                        updateDashboard();
+                        updateTransactionsList();
+                        generateReport();
+                        
+                        alert('Data berhasil diimpor!');
+                    }
+                } catch (error) {
+                    alert('File tidak valid atau rusak!');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function clearAllData() {
+            const confirmText = prompt('Ketik "HAPUS SEMUA" untuk konfirmasi penghapusan data:');
+            if (confirmText === 'HAPUS SEMUA') {
+                localStorage.removeItem('umkm_transactions');
+                localStorage.removeItem('umkm_profile');
+                
+                transactions = [];
+                businessProfile = {};
+                
+                document.getElementById('profileForm').reset();
+                updateDashboard();
+                updateTransactionsList();
+                generateReport();
+                
+                alert('Semua data berhasil dihapus!');
+            } else {
+                alert('Konfirmasi tidak sesuai. Data tidak dihapus.');
+            }
+        }
+
+        // Utility functions
+        function calculateStats(transactionList) {
+            const income = transactionList
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            const expense = transactionList
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+            
+            return {
+                totalIncome: income,
+                totalExpense: expense,
+                netProfit: income - expense
+            };
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function formatDateShort(dateString) {
+            return new Date(dateString).toLocaleDateString('id-ID', {
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // Add some sample data for demonstration
+        function addSampleData() {
+            const sampleTransactions = [
+                {
+                    id: '1',
+                    date: new Date().toISOString().split('T')[0],
+                    type: 'income',
+                    category: 'Penjualan',
+                    description: 'Penjualan produk hari ini',
+                    amount: 500000,
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    id: '2',
+                    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+                    type: 'expense',
+                    category: 'Bahan Baku',
+                    description: 'Pembelian bahan baku',
+                    amount: 200000,
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    id: '3',
+                    date: new Date(Date.now() - 172800000).toISOString().split('T')[0],
+                    type: 'income',
+                    category: 'Penjualan',
+                    description: 'Penjualan online',
+                    amount: 750000,
+                    timestamp: new Date().toISOString()
+                }
+            ];
+            
+            if (transactions.length === 0) {
+                transactions = sampleTransactions;
+                localStorage.setItem('umkm_transactions', JSON.stringify(transactions));
+                updateDashboard();
+                updateTransactionsList();
+            }
+        }
+
+        // Add sample data button (for demo purposes)
+        if (transactions.length === 0) {
+            const demoButton = document.createElement('button');
+            demoButton.innerHTML = '<i class="fas fa-plus"></i> Tambah Data Demo';
+            demoButton.className = 'btn btn-primary';
+            demoButton.style.position = 'fixed';
+            demoButton.style.bottom = '20px';
+            demoButton.style.right = '20px';
+            demoButton.style.zIndex = '1000';
+            demoButton.onclick = function() {
+                addSampleData();
+                document.body.removeChild(demoButton);
+            };
+            document.body.appendChild(demoButton);
+        }
+                        
