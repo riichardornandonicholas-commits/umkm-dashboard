@@ -87,6 +87,8 @@
             padding: 6px 0;
             border-bottom: 1px solid #eee;
             font-size: 0.9rem;
+            align-items: center;
+    gap: 10px;
         }
         .transaksi-item:last-child {
             border-bottom: none;
@@ -195,29 +197,40 @@
         tanggalInput.valueAsDate = new Date();
 
         // Fungsi render daftar transaksi
-        function renderTransaksi() {
-            if (transaksi.length === 0) {
-                transaksiList.innerHTML = '<p style="text-align:center; color:#666;">Belum ada transaksi</p>';
-                return;
-            }
-            transaksiList.innerHTML = '';
-            transaksi.forEach((t, i) => {
-                const div = document.createElement('div');
-                div.className = 'transaksi-item ' + (t.jenis === 'pendapatan' ? 'income' : 'expense');
-                div.innerHTML = `
-                    <div>${t.jenis.charAt(0).toUpperCase() + t.jenis.slice(1)}</div>
-                    <div>Rp ${Number(t.jumlah).toLocaleString('id-ID')}</div>
-                    <div>${t.tanggal}</div>
-                    <button aria-label="Hapus transaksi" style="background:none; border:none; color:#a12a2a; cursor:pointer; font-weight:bold;">&times;</button>
-                `;
-                // Hapus transaksi
-                div.querySelector('button').addEventListener('click', () => {
-                    transaksi.splice(i, 1);
-                    simpanData();
-                    renderTransaksi();
-                    updateSaldo();
-                    hasilLaporan.innerHTML = '';
-                });
+function renderTransaksi() {
+    if (transaksi.length === 0) {
+        transaksiList.innerHTML = '<p style="text-align:center; color:#666;">Belum ada transaksi</p>';
+        return;
+    }
+    transaksiList.innerHTML = '';
+    transaksi.forEach((t, i) => {
+        const div = document.createElement('div');
+        div.className = 'transaksi-item ' + (t.jenis === 'pendapatan' ? 'income' : 'expense');
+
+        // Format tanggal agar mudah dibaca (contoh: DD-MM-YYYY)
+        const tanggalObj = new Date(t.tanggal);
+        const tanggalFormatted = tanggalObj.toLocaleDateString('id-ID');
+
+        // Isi elemen transaksi dengan spasi jelas
+        div.innerHTML = `
+            <div style="flex: 1; min-width: 100px;">${t.jenis.charAt(0).toUpperCase() + t.jenis.slice(1)}</div>
+            <div style="flex: 1; text-align: right;">Rp ${Number(t.jumlah).toLocaleString('id-ID')}</div>
+            <div style="flex: 1; text-align: center;">${tanggalFormatted}</div>
+            <button aria-label="Hapus transaksi" style="background:none; border:none; color:#a12a2a; cursor:pointer; font-weight:bold;">&times;</button>
+        `;
+
+        // Hapus transaksi
+        div.querySelector('button').addEventListener('click', () => {
+            transaksi.splice(i, 1);
+            simpanData();
+            renderTransaksi();
+            updateSaldo();
+            hasilLaporan.innerHTML = '';
+        });
+
+        transaksiList.appendChild(div);
+    });
+}
                 transaksiList.appendChild(div);
             });
         }
